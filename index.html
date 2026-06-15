@@ -28,7 +28,7 @@
     <style>
         body {
             font-family: 'Inter', 'Sarabun', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            background: linear-gradient(135deg, #f8fafc 0%, #b3c9e7 100%);
         }
         /* Glassmorphism styling */
         .glass-panel {
@@ -79,16 +79,16 @@
             
             <!-- Share & Save Menu Control -->
             <div class="flex items-center gap-2">
-                <!-- Share Trip (Base64 URL style fallback) -->
-                <button onclick="generateShareLink()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all duration-200" title="สร้างลิงก์แชร์ด่วนผ่าน URL">
-                    <i data-lucide="link" class="w-4 h-4"></i>
-                    <span class="hidden md:inline">แชร์ด่วน URL</span>
+                <!-- Export Summary Button -->
+                <button onclick="exportTrip()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-all duration-200" title="สรุปแผนการเดินทางเป็นตัวอักษร">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">สรุปแผน</span>
                 </button>
 
                 <!-- Save Trip to Cloud (Firebase) -->
                 <button onclick="saveTripToCloud()" id="btnSaveCloud" class="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-750 hover:shadow-md hover:shadow-indigo-100 rounded-lg transition-all duration-200" title="บันทึกลงฐานข้อมูลคลาวด์และรับลิงก์แชร์">
                     <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-                    <span>เซฟขึ้นคลาวด์</span>
+                    <span>แชร์ทริป</span>
                 </button>
                 
                 <!-- Utilities Dropdown -->
@@ -102,9 +102,6 @@
                         </button>
                         <button onclick="downloadTripFile()" class="w-full text-left px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
                             <i data-lucide="download-cloud" class="w-4 h-4 text-slate-400"></i> เซฟไฟล์ทริป (.json)
-                        </button>
-                        <button onclick="exportTrip()" class="w-full text-left px-4 py-2 text-xs sm:text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2">
-                            <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i> สรุปแผนตัวอักษร
                         </button>
                         <button onclick="openDemoTrip()" class="w-full text-left px-4 py-2 text-xs sm:text-sm text-indigo-600 hover:bg-indigo-50/55 flex items-center gap-2 font-medium">
                             <i data-lucide="sparkles" class="w-4 h-4 text-indigo-500"></i> ทริปตัวอย่างเชียงใหม่
@@ -135,7 +132,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5">ชื่อทริปเดินทางของคุณ</label>
-                        <input type="text" id="tripName" value="ทริปเที่ยวเชียงใหม่ 3 วัน 2 คืน" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm font-semibold text-slate-800 transition-all bg-white/60">
+                        <input type="text" id="tripName" value="ทริปเที่ยว ตะลุย กทม. 3 วัน 2 คืน" class="w-full px-3.5 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm font-semibold text-slate-800 transition-all bg-white/60">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -657,12 +654,26 @@
 
             const latLngs = [];
 
+            // Color palette per category
+            const categoryColors = {
+                travel:  { bg: '#6366f1', border: '#4338ca', emoji: '🚌' },
+                food:    { bg: '#f43f5e', border: '#be123c', emoji: '🍜' },
+                ticket:  { bg: '#f59e0b', border: '#b45309', emoji: '🎫' },
+                hotel:   { bg: '#10b981', border: '#047857', emoji: '🏨' },
+                other:   { bg: '#8b5cf6', border: '#6d28d9', emoji: '📌' },
+                free:    { bg: '#64748b', border: '#334155', emoji: '⭐' }
+            };
+
             dayLocations.forEach((loc, index) => {
+                const cat = categoryColors[loc.category] || categoryColors.other;
                 const markerIcon = L.divIcon({
-                    html: `<div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-650 text-white font-bold text-xs border-2 border-white shadow-md transform hover:scale-110 transition-transform">${index + 1}</div>`,
+                    html: `<div style="background:${cat.bg};border:2.5px solid ${cat.border};width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,0.25);">
+                        <span style="transform:rotate(45deg);font-size:14px;line-height:1;">${cat.emoji}</span>
+                    </div>
+                    <div style="position:absolute;top:-6px;right:-6px;background:#fff;border:2px solid ${cat.border};color:${cat.bg};width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;box-shadow:0 1px 4px rgba(0,0,0,0.2);">${index + 1}</div>`,
                     className: 'custom-div-icon',
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 36]
                 });
 
                 const budgetInfo = loc.budget ? `<br><b>งบประมาณ:</b> ${loc.budget.toLocaleString()} บาท` : '';
@@ -857,7 +868,7 @@
                 return;
             }
 
-            dayLocations.forEach((loc) => {
+            dayLocations.forEach((loc, listIdx) => {
                 let badgeColor = "bg-slate-100 text-slate-700";
                 let badgeText = "ไม่มีค่าใช้จ่าย";
                 switch(loc.category) {
@@ -869,13 +880,21 @@
                 }
 
                 const coordinateText = loc.lat && loc.lng ? `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}` : "ไม่ได้ระบุพิกัด";
+                const isFirst = listIdx === 0;
+                const isLast = listIdx === dayLocations.length - 1;
 
                 container.innerHTML += `
                     <div class="bg-white/60 hover:bg-white border border-slate-150 hover:border-indigo-150 hover:shadow-sm rounded-xl p-3.5 transition-all duration-200 flex items-start gap-3.5 group relative">
-                        <!-- Timeline circle and lines -->
-                        <div class="flex flex-col items-center justify-start mt-1">
+                        <!-- Reorder buttons -->
+                        <div class="flex flex-col items-center gap-0.5 mt-1 flex-shrink-0">
+                            <button onclick="moveLocation('${loc.id}', -1)" class="p-0.5 rounded text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all disabled:opacity-20" ${isFirst ? 'disabled' : ''} title="เลื่อนขึ้น">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                            </button>
                             <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-600 bg-white"></div>
-                            <span class="text-[10px] font-bold text-indigo-700 mt-1.5 bg-indigo-50 px-1.5 py-0.5 rounded">${loc.time || '--:--'} น.</span>
+                            <button onclick="moveLocation('${loc.id}', 1)" class="p-0.5 rounded text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all disabled:opacity-20" ${isLast ? 'disabled' : ''} title="เลื่อนลง">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <span class="text-[9px] font-bold text-indigo-700 mt-0.5 bg-indigo-50 px-1.5 py-0.5 rounded">${loc.time || '--:--'}</span>
                         </div>
 
                         <!-- Card info -->
@@ -900,9 +919,14 @@
                                 <span class="text-xs text-slate-500 font-semibold">
                                     งบประมาณ: <strong class="text-slate-800 font-bold">${loc.budget ? loc.budget.toLocaleString() : 0}</strong> บาท
                                 </span>
-                                <button onclick="deleteLocation('${loc.id}')" class="text-slate-400 hover:text-red-555 hover:bg-red-50 transition-all p-1 rounded-lg md:opacity-0 group-hover:opacity-100" title="ลบออกจากแผน">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
+                                <div class="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-all">
+                                    <button onclick="openEditModal('${loc.id}')" class="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all p-1 rounded-lg" title="แก้ไขสถานที่">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="deleteLocation('${loc.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all p-1 rounded-lg" title="ลบออกจากแผน">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1368,7 +1392,8 @@
 
             document.getElementById('exportArea').value = text;
             document.getElementById('exportModal').classList.remove('hidden');
-            document.getElementById('utilsDropdown').classList.add('hidden');
+            const ud = document.getElementById('utilsDropdown');
+            if (ud) ud.classList.add('hidden');
         }
 
         function closeExportModal() {
@@ -1381,6 +1406,87 @@
             document.execCommand('copy');
             showToast("คัดลอกข้อความแผนการเดินทางลงคลิปบอร์ดแล้ว!", "success");
             closeExportModal();
+        }
+
+        // --- Reorder Locations ---
+        function moveLocation(id, direction) {
+            const dayLocs = tripState.locations
+                .filter(loc => loc.day === tripState.selectedDay)
+                .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+            const idx = dayLocs.findIndex(l => l.id === id);
+            const swapIdx = idx + direction;
+            if (swapIdx < 0 || swapIdx >= dayLocs.length) return;
+
+            // Swap the time values to change visual order, OR swap positions in global array
+            const globalA = tripState.locations.findIndex(l => l.id === dayLocs[idx].id);
+            const globalB = tripState.locations.findIndex(l => l.id === dayLocs[swapIdx].id);
+
+            // Swap time fields so sort order reflects the user's intent
+            const tempTime = tripState.locations[globalA].time;
+            tripState.locations[globalA].time = tripState.locations[globalB].time;
+            tripState.locations[globalB].time = tempTime;
+
+            // If both times are same or empty, swap positions in array directly
+            if (tripState.locations[globalA].time === tripState.locations[globalB].time) {
+                [tripState.locations[globalA], tripState.locations[globalB]] = [tripState.locations[globalB], tripState.locations[globalA]];
+            }
+
+            renderLocationsList();
+        }
+
+        // --- Edit Modal ---
+        function openEditModal(id) {
+            const loc = tripState.locations.find(l => l.id === id);
+            if (!loc) return;
+
+            document.getElementById('editLocId').value = loc.id;
+            document.getElementById('editLocName').value = loc.name || '';
+            document.getElementById('editLocDay').value = loc.day || 1;
+            document.getElementById('editLocTime').value = loc.time || '';
+            document.getElementById('editLocLat').value = loc.lat || '';
+            document.getElementById('editLocLng').value = loc.lng || '';
+            document.getElementById('editLocBudget').value = loc.budget || 0;
+            document.getElementById('editLocExpenseCat').value = loc.category || 'free';
+            document.getElementById('editLocNote').value = loc.note || '';
+
+            // Populate day options
+            const daySelect = document.getElementById('editLocDay');
+            daySelect.innerHTML = '';
+            for (let i = 1; i <= tripState.days; i++) {
+                daySelect.innerHTML += `<option value="${i}"${loc.day === i ? ' selected' : ''}>วันที่ ${i}</option>`;
+            }
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function saveEditModal() {
+            const id = document.getElementById('editLocId').value;
+            const loc = tripState.locations.find(l => l.id === id);
+            if (!loc) return;
+
+            const name = document.getElementById('editLocName').value.trim();
+            if (!name) { showToast("กรุณาระบุชื่อสถานที่", "error"); return; }
+
+            loc.name = name;
+            loc.day = parseInt(document.getElementById('editLocDay').value);
+            loc.time = document.getElementById('editLocTime').value;
+            const lat = parseFloat(document.getElementById('editLocLat').value);
+            const lng = parseFloat(document.getElementById('editLocLng').value);
+            loc.lat = isNaN(lat) ? null : lat;
+            loc.lng = isNaN(lng) ? null : lng;
+            loc.budget = parseFloat(document.getElementById('editLocBudget').value) || 0;
+            loc.category = document.getElementById('editLocExpenseCat').value;
+            loc.note = document.getElementById('editLocNote').value.trim();
+
+            closeEditModal();
+            showToast(`แก้ไข "${loc.name}" เรียบร้อยแล้ว`, "success");
+            renderLocationsList();
+            updateBudgetUI();
         }
 
         // --- Custom Toast / Banner UI System ---
