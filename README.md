@@ -57,7 +57,7 @@ python -m http.server 8000
    }
    ```
 5. นำ Config ไปวางในช่อง "ฐานข้อมูลออนไลน์ Firebase (Firestore)" ในหน้าตั้งค่าของแอป
-6. **การเปิดใช้งาน Firestore Database**:
+6. **การเปิดใช้งาน Firestore Database**:  
    - ในเมนูด้านซ้ายของ Firebase Console ไปที่ **Build -> Firestore Database**
    - คลิกปุ่ม **"Create Database"**
    - เลือกเซิร์ฟเวอร์ที่อยู่ใกล้เคียง (เช่น `asia-southeast1` สิงคโปร์ หรือ `asia-east1`)
